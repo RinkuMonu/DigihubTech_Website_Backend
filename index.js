@@ -33,10 +33,12 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Add this before your routes
+// 🔁 Move this block at the top of all middlewares
 app.use(cors({
-  origin: "*", // your frontend port
-  credentials: true, // allow cookies to be sent
+  origin: "*",
+  credentials: true,
 }));
+ 
 
 
 app.use('/uploads', express.static(path.join(__dirname, './src/uploads')));
