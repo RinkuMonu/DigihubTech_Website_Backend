@@ -2,54 +2,34 @@ import Product from "../models/Product.model.js";
 import mongoose from "mongoose";
 import Websitelist from "../models/Website.model.js"; // Import the Websitelist model
 
-
-
 export const createProduct = async (req, res) => {
-  try {
-    const {
-      referenceWebsite,
-      productName,
-      discount,
-      price,
-      actualPrice,
-      category,
-      description,
-      size
-    } = req.body;
-
-    const productSize = size || "M";
-
-    if (actualPrice < 0 || actualPrice > price) {
-      return res.status(400).json({
-        message: "Invalid actualPrice. It must be a positive value and less than or equal to price.",
-      });
+    try {
+        const { referenceWebsite, productName, images, discount, price, actualPrice, category, description, size } = req.body;
+        const imageArray = Array.isArray(images) ? images : [images];
+        const productSize = size || "M";
+        if (actualPrice < 0 || actualPrice > price) {
+            return res.status(400).json({
+                message: "Invalid actualPrice. It must be a positive value and less than or equal to price.",
+            });
+        }
+        const product = new Product({
+            referenceWebsite,
+            productName,
+            images: imageArray,
+            price,
+            actualPrice: actualPrice || 0,
+            category,
+            description,
+            size: productSize,
+            discount,
+            addedBy: req.user?.id?.toString(),
+        });
+        await product.save();
+        res.status(200).json({ message: "Product added successfully", product });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to add product", error: error.message });
     }
-
-    // Multer stores files in req.files
-    const imagePaths = req.files.map(file => `/uploads/${file.filename}`);
-
-    const product = new Product({
-      referenceWebsite,
-      productName,
-      images: imagePaths,
-      price,
-      actualPrice: actualPrice || 0,
-      category,
-      description,
-      size: productSize,
-      discount,
-      addedBy: req.user?.id?.toString(),
-    });
-
-    await product.save();
-
-    res.status(200).json({ message: "Product added successfully", product });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to add product", error: error.message });
-  }
 };
-
 
 export const createMultipleProducts = async (req, res) => {
     try {
@@ -81,117 +61,108 @@ export const createMultipleProducts = async (req, res) => {
 };
 
 export const getProducts = async (req, res) => {
-    try {
-        const {
-            referenceWebsite,
-            category,
-            search,
-            minPrice,
-            maxPrice,
-            sortBy = 'createdAt',
-            sortOrder = 'desc',
-            page = 1,
-            limit = 10,
-        } = req.query;
+  try {
+    const {
+      referenceWebsite,
+      category,
+      minPrice = 0,
+      maxPrice = 1000000,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      page = 1,
+      limit = 100,
+    } = req.query
 
-        if (!referenceWebsite) {
-            return res.status(400).json({ message: "Reference website is required" });
-        }
-
-        const pageNumber = parseInt(page, 10) || 1;
-        const pageSize = parseInt(limit, 10) || 10;
-
-        const user = req.user?.id?.toString();
-        const role = req.user?.role;
-
-        // Build the match stage for filtering
-        const matchStage = { referenceWebsite: new mongoose.Types.ObjectId(referenceWebsite) };
-
-        if (category) {
-            matchStage.category = new mongoose.Types.ObjectId(category);
-        }
-
-        if (role && role !== "admin" && role !== "super-admin") matchStage.addedBy = new mongoose.Types.ObjectId(user);
-
-        if (search) {
-            matchStage.$or = [
-                { productName: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } },
-            ];
-        }
-
-        if (minPrice || maxPrice) {
-            matchStage.actualPrice = {};
-            if (minPrice) matchStage.actualPrice.$gte = parseFloat(minPrice);
-            if (maxPrice) matchStage.actualPrice.$lte = parseFloat(maxPrice);
-        }
-
-        const pipeline = [
-            { $match: matchStage }, // Match documents based on filters
-            {
-                $lookup: {
-                    from: 'productcategories', // Ensure this matches your actual collection name
-                    localField: 'category',
-                    foreignField: '_id',
-                    as: 'category',
-                },
-            },
-            {
-                $unwind: {
-                    path: '$category',
-                    preserveNullAndEmptyArrays: true, // Retain products without a category
-                },
-            },
-            {
-                $addFields: {
-                    category: {
-                        _id: '$category._id',
-                        name: '$category.name',
-                    },
-                },
-            },
-            {
-                $sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 },
-            },
-            {
-                $facet: {
-                    metadata: [
-                        { $count: 'totalDocuments' },
-                        {
-                            $addFields: {
-                                currentPage: pageNumber,
-                                pageSize,
-                                totalPages: { $ceil: { $divide: ['$totalDocuments', pageSize] } },
-                            },
-                        },
-                    ],
-                    products: [
-                        { $skip: (pageNumber - 1) * pageSize },
-                        { $limit: pageSize },
-                    ],
-                },
-            },
-        ];
-
-        const results = await Product.aggregate(pipeline);
-
-        const metadata = results[0]?.metadata[0] || {
-            totalDocuments: 0,
-            currentPage: pageNumber,
-            pageSize,
-            totalPages: 0,
-        };
-        const products = results[0]?.products || [];
-
-        res.status(200).json({
-            products,
-            pagination: metadata,
-        });
-    } catch (error) {
-        console.error('Error in getProducts:', error.message);
-        res.status(500).json({ message: 'Failed to retrieve products', error: error.message });
+    if (!referenceWebsite) {
+      return res.status(400).json({ message: "Missing referenceWebsite" })
     }
-};
+
+    const pipeline = []
+
+    // Match the website
+    pipeline.push({
+      $match: {
+        referenceWebsite: new mongoose.Types.ObjectId(referenceWebsite),
+      },
+    })
+
+    // Lookup to join category info
+    pipeline.push({
+      $lookup: {
+        from: "productcategories",
+        localField: "category",
+        foreignField: "_id",
+        as: "category",
+      },
+    })
+
+    // Flatten the joined category array
+    pipeline.push({ $unwind: "$category" })
+
+    // Match by category name (case-insensitive)
+    if (category) {
+      pipeline.push({
+        $match: {
+          "category.name": {
+            $regex: new RegExp("^" + category + "$", "i"), // case-insensitive exact match
+          },
+        },
+      })
+    }
+
+    // Filter by price range
+    pipeline.push({
+      $match: {
+        price: {
+          $gte: parseFloat(minPrice),
+          $lte: parseFloat(maxPrice),
+        },
+      },
+    })
+
+    // Sorting
+    pipeline.push({
+      $sort: {
+        [sortBy]: sortOrder === "asc" ? 1 : -1,
+      },
+    })
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit)
+    pipeline.push({ $skip: skip })
+    pipeline.push({ $limit: parseInt(limit) })
+
+    // Execute aggregation for products
+    const products = await Product.aggregate(pipeline)
+
+    // Count total documents (excluding pagination stages)
+    const countPipeline = pipeline.filter(
+      (stage) => !stage.$skip && !stage.$limit && !stage.$sort
+    )
+    countPipeline.push({ $count: "total" })
+
+    const countResult = await Product.aggregate(countPipeline)
+    const totalDocuments = countResult[0]?.total || 0
+    const totalPages = Math.ceil(totalDocuments / limit)
+
+    return res.status(200).json({
+      message: "Products retrieved successfully",
+      products,
+      pagination: {
+        totalDocuments,
+        currentPage: parseInt(page),
+        pageSize: parseInt(limit),
+        totalPages,
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching products:", error)
+    return res.status(500).json({
+      message: "Failed to retrieve products",
+      error: error.message,
+    })
+  }
+}
 
 // export const getProducts = async (req, res) => {
 //     try {

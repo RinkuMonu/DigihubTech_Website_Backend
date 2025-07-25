@@ -32,14 +32,11 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Add this before your routes
-// 🔁 Move this block at the top of all middlewares
-app.use(cors({
-  origin: "*",
-  credentials: true,
-}));
- 
 
+app.use(cors({
+  origin: ["http://localhost:5174", "https://yourfrontenddomain.com" , "https://jajamblockprints.com" , "https://admin.jajamblockprints.com"], // allow specific frontend domains
+  credentials: true, // allow cookies and headers like Authorization
+}));
 
 app.use('/uploads', express.static(path.join(__dirname, './src/uploads')));
 
