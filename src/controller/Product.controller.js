@@ -2,34 +2,54 @@ import Product from "../models/Product.model.js";
 import mongoose from "mongoose";
 import Websitelist from "../models/Website.model.js"; // Import the Websitelist model
 
+
+
 export const createProduct = async (req, res) => {
-    try {
-        const { referenceWebsite, productName, images, discount, price, actualPrice, category, description, size } = req.body;
-        const imageArray = Array.isArray(images) ? images : [images];
-        const productSize = size || "M";
-        if (actualPrice < 0 || actualPrice > price) {
-            return res.status(400).json({
-                message: "Invalid actualPrice. It must be a positive value and less than or equal to price.",
-            });
-        }
-        const product = new Product({
-            referenceWebsite,
-            productName,
-            images: imageArray,
-            price,
-            actualPrice: actualPrice || 0,
-            category,
-            description,
-            size: productSize,
-            discount,
-            addedBy: req.user?.id?.toString(),
-        });
-        await product.save();
-        res.status(200).json({ message: "Product added successfully", product });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to add product", error: error.message });
+  try {
+    const {
+      referenceWebsite,
+      productName,
+      discount,
+      price,
+      actualPrice,
+      category,
+      description,
+      size
+    } = req.body;
+
+    const productSize = size || "M";
+
+    if (actualPrice < 0 || actualPrice > price) {
+      return res.status(400).json({
+        message: "Invalid actualPrice. It must be a positive value and less than or equal to price.",
+      });
     }
+
+    // Multer stores files in req.files
+    const imagePaths = req.files.map(file => `/uploads/${file.filename}`);
+
+    const product = new Product({
+      referenceWebsite,
+      productName,
+      images: imagePaths,
+      price,
+      actualPrice: actualPrice || 0,
+      category,
+      description,
+      size: productSize,
+      discount,
+      addedBy: req.user?.id?.toString(),
+    });
+
+    await product.save();
+
+    res.status(200).json({ message: "Product added successfully", product });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to add product", error: error.message });
+  }
 };
+
 
 export const createMultipleProducts = async (req, res) => {
     try {

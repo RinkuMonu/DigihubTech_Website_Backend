@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Add this before your routes
 app.use(cors({
-  origin: "http://localhost:5174", // your frontend port
+  origin: "*", // your frontend port
   credentials: true, // allow cookies to be sent
 }));
 
