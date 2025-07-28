@@ -33,8 +33,8 @@ const productSchema = new mongoose.Schema(
     },
     size: {
       type: String, // Single size, not an array
-      enum: ["S", "M", "L", "XL", "XXL"],
-      default: "M", // Default size
+    //  enum: ["S", "M", "L", "XL", "XXL", "Free", "Custom", "OneSize"],
+      default: "Free", // Default size
       required: true,
     },
     discount: {
@@ -45,6 +45,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "ProductCategory"
     },
+    
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

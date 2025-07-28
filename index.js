@@ -18,6 +18,7 @@ import { getDashboardData } from "./src/routes/dashboard.routes.js";
 import { fileURLToPath } from "url";
 import vendorRoutes from "./src/routes/vendor.routes.js";
 import { isAdmin } from "./src/middleware/isAdmin.js";
+import bannerRoutes from "./src/routes/banner.rotes.js";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use('/api/categories', catergoriesRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/policy",policyRoutes)
+app.use("/api/banners", bannerRoutes);
 
 app.post("/api/phonepe-payment", phonePeController)
 app.get("/api/dashboard", isAdmin, getDashboardData)
