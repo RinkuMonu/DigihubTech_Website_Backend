@@ -59,16 +59,13 @@ app.use("/api", vendorRoutes)
 
 DBConnection();
 
-
-
-
 app.get('/', (req, res) => {
   res.send('server running well')
 })
 
 app.use((err, req, res, next) => {
   console.error("Error occurred: ", err);
-  const statusCode = err.statusCode || 500;
+  const statusCode = err.statusCode || 5007;
   const message = err.message || "Internal Server Error";
   res.status(statusCode).json({ message }); // Respond with the error message
 });
