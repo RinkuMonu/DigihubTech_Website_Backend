@@ -1,35 +1,64 @@
 import Product from "../models/Product.model.js";
 import mongoose from "mongoose";
 import Websitelist from "../models/Website.model.js"; // Import the Websitelist model
-
 export const createProduct = async (req, res) => {
     try {
-        const { referenceWebsite, productName, images, discount, price, actualPrice, category, description, size } = req.body;
-        const imageArray = Array.isArray(images) ? images : [images];
+        console.log("Incoming request body:", req.body);
+        console.log("Uploaded files:", req.files);
+        console.log("User info:", req.user);
+
+        const {
+            referenceWebsite,
+            productName,
+            discount,
+            price,
+            actualPrice,
+            category,
+            description,
+            size
+        } = req.body;
+
+        const imageArray = req.files?.map(file => `/uploads/${file.filename}`) || [];
         const productSize = size || "M";
+
+        console.log("Processed images:", imageArray);
+        console.log("Product size:", productSize);
+        console.log("Price:", price, "Actual Price:", actualPrice);
+
         if (actualPrice < 0 || actualPrice > price) {
+            console.warn("Invalid actualPrice detected");
             return res.status(400).json({
                 message: "Invalid actualPrice. It must be a positive value and less than or equal to price.",
             });
         }
+
         const product = new Product({
             referenceWebsite,
             productName,
             images: imageArray,
-            price,
-            actualPrice: actualPrice || 0,
+            price: Number(price),
+            actualPrice: Number(actualPrice),
             category,
             description,
             size: productSize,
-            discount,
+            discount: Number(discount),
             addedBy: req.user?.id?.toString(),
         });
+
+        console.log("Saving product to database:", product);
+
         await product.save();
+
+        console.log("Product saved successfully");
+
         res.status(200).json({ message: "Product added successfully", product });
     } catch (error) {
+        console.error("Error in createProduct:", error);
         res.status(500).json({ message: "Failed to add product", error: error.message });
     }
 };
+
+
 
 export const createMultipleProducts = async (req, res) => {
     try {
@@ -71,20 +100,21 @@ export const getProducts = async (req, res) => {
       sortOrder = "desc",
       page = 1,
       limit = 100,
-    } = req.query
+      newArrival, // ✅ added
+    } = req.query;
 
     if (!referenceWebsite) {
-      return res.status(400).json({ message: "Missing referenceWebsite" })
+      return res.status(400).json({ message: "Missing referenceWebsite" });
     }
 
-    const pipeline = []
+    const pipeline = [];
 
     // Match the website
     pipeline.push({
       $match: {
         referenceWebsite: new mongoose.Types.ObjectId(referenceWebsite),
       },
-    })
+    });
 
     // Lookup to join category info
     pipeline.push({
@@ -94,10 +124,10 @@ export const getProducts = async (req, res) => {
         foreignField: "_id",
         as: "category",
       },
-    })
+    });
 
     // Flatten the joined category array
-    pipeline.push({ $unwind: "$category" })
+    pipeline.push({ $unwind: "$category" });
 
     // Match by category name (case-insensitive)
     if (category) {
@@ -107,7 +137,7 @@ export const getProducts = async (req, res) => {
             $regex: new RegExp("^" + category + "$", "i"), // case-insensitive exact match
           },
         },
-      })
+      });
     }
 
     // Filter by price range
@@ -118,32 +148,42 @@ export const getProducts = async (req, res) => {
           $lte: parseFloat(maxPrice),
         },
       },
-    })
+    });
+
+    // ✅ Filter by new arrivals (last 15 days)
+    if (newArrival === "true") {
+      const fifteenDaysAgo = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+      pipeline.push({
+        $match: {
+          createdAt: { $gte: fifteenDaysAgo },
+        },
+      });
+    }
 
     // Sorting
     pipeline.push({
       $sort: {
         [sortBy]: sortOrder === "asc" ? 1 : -1,
       },
-    })
+    });
 
     // Pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    pipeline.push({ $skip: skip })
-    pipeline.push({ $limit: parseInt(limit) })
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: parseInt(limit) });
 
     // Execute aggregation for products
-    const products = await Product.aggregate(pipeline)
+    const products = await Product.aggregate(pipeline);
 
     // Count total documents (excluding pagination stages)
     const countPipeline = pipeline.filter(
       (stage) => !stage.$skip && !stage.$limit && !stage.$sort
-    )
-    countPipeline.push({ $count: "total" })
+    );
+    countPipeline.push({ $count: "total" });
 
-    const countResult = await Product.aggregate(countPipeline)
-    const totalDocuments = countResult[0]?.total || 0
-    const totalPages = Math.ceil(totalDocuments / limit)
+    const countResult = await Product.aggregate(countPipeline);
+    const totalDocuments = countResult[0]?.total || 0;
+    const totalPages = Math.ceil(totalDocuments / limit);
 
     return res.status(200).json({
       message: "Products retrieved successfully",
@@ -154,15 +194,16 @@ export const getProducts = async (req, res) => {
         pageSize: parseInt(limit),
         totalPages,
       },
-    })
+    });
   } catch (error) {
-    console.error("Error fetching products:", error)
+    console.error("Error fetching products:", error);
     return res.status(500).json({
       message: "Failed to retrieve products",
       error: error.message,
-    })
+    });
   }
-}
+};
+
 
 // export const getProducts = async (req, res) => {
 //     try {
@@ -357,3 +398,5 @@ export const deleteProduct = async (req, res) => {
         res.status(500).json({ message: "Failed to delete product", error: error.message });
     }
 };
+
+

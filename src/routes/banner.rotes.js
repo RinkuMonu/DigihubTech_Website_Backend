@@ -6,6 +6,7 @@ import {
   getBannerDetail,
   getBanners,
   getBannersByWebsiteAndPosition,
+  getMobileBanners,
   updateBanner,
 } from "../controller/Banner.controller.js";
 import upload from "../middleware/multerConfig.js";
@@ -30,7 +31,7 @@ bannerRoutes.post(
 );
 bannerRoutes.get("/by-website-and-position", getBannersByWebsiteAndPosition);
 
-
+bannerRoutes.get("/mobile", getMobileBanners); // new
 // Get banners (public or protected depending on app logic)
 bannerRoutes.get("/", getBanners);
 

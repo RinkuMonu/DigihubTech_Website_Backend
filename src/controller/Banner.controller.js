@@ -5,7 +5,7 @@ import Websitelist from "../models/Website.model.js";
 // Create a single banner
 export const createBanner = async (req, res) => {
   try {
-      const { referenceWebsite, bannerName, description, position } = req.body;
+      const { referenceWebsite, bannerName,deviceType= "both", description, position } = req.body;
    const imageArray = req.files?.map(file => `/uploads/${file.filename}`) || [];
 
      const banner = new Banner({
@@ -15,6 +15,7 @@ export const createBanner = async (req, res) => {
       images: imageArray,
       position: position || "homepage-top",
       addedBy: req.user?.id?.toString(),
+        deviceType
     });
 
     await banner.save();
@@ -178,5 +179,34 @@ export const deleteBanner = async (req, res) => {
     res.status(200).json({ message: "Banner deleted successfully", banner });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete banner", error: error.message });
+  }
+};
+export const getMobileBanners = async (req, res) => {
+  try {
+    const { referenceWebsite, position } = req.query;
+
+    if (!referenceWebsite) {
+      return res.status(400).json({ message: "Missing referenceWebsite" });
+    }
+
+    const query = {
+      referenceWebsite,
+      deviceType: { $in: ["mobile", "both"] },
+    };
+
+    if (position) query.position = position;
+
+    const banners = await Banner.find(query).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Mobile banners fetched successfully",
+      banners,
+    });
+  } catch (error) {
+    console.error("Error fetching mobile banners:", error);
+    return res.status(500).json({
+      message: "Failed to fetch mobile banners",
+      error: error.message,
+    });
   }
 };

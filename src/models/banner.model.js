@@ -16,6 +16,10 @@ const bannerSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+    },deviceType: {
+      type: String,
+      enum: ["mobile", "desktop", "both"],
+      default: "both",
     },
     images: {
       type: [String],

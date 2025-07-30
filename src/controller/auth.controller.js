@@ -1,23 +1,33 @@
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import User from '../models/User.model.js';
-import jwt from 'jsonwebtoken';
+import User from "../models/User.model.js";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-
 
 dotenv.config({ path: "../.env" });
 
 export const registerUser = async (req, res) => {
   try {
     console.log("dfghfgfdd");
-    const { firstName, lastName, email, password, referenceWebsite, mobile, address, role } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      referenceWebsite,
+      mobile,
+      address,
+      role,
+    } = req.body;
 
     if (!firstName || !lastName || !email || !password || !referenceWebsite) {
       return res.status(400).json({ msg: "All fields are required." });
     }
     const existingUser = await User.findOne({ email, referenceWebsite });
     if (existingUser) {
-      return res.status(400).json({ msg: "User already registered with this website." });
+      return res
+        .status(400)
+        .json({ msg: "User already registered with this website." });
     }
 
     // if (existingUser) {
@@ -79,12 +89,16 @@ export const logInUser = async (req, res) => {
     const { email, password, referenceWebsite } = req.body;
 
     if (!email || !password || !referenceWebsite) {
-      return res.status(400).json({ msg: "Email, password, and reference website are required." });
+      return res
+        .status(400)
+        .json({ msg: "Email, password, and reference website are required." });
     }
 
     const user = await User.findOne({ email, referenceWebsite });
     if (!user) {
-      return res.status(400).json({ msg: "No account found with this email. Please sign up." });
+      return res
+        .status(400)
+        .json({ msg: "No account found with this email. Please sign up." });
     }
     // Check if the user is registered for the given reference website
     // if (!user.referenceWebsite.includes(referenceWebsite)) {
@@ -126,29 +140,32 @@ export const logInUser = async (req, res) => {
   }
 };
 
-
-
 export const adminLogin = async (req, res) => {
   console.log("hiithfhfhdf");
-  
+
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ msg: "Email, password, and reference website are required." });
+      return res
+        .status(400)
+        .json({ msg: "Email, password, and reference website are required." });
     }
     // const user = await User.findOne({ email,  });
 
     let user = await User.findOne({
-      email, role: "super-admin"
-    })
+      email,
+      role: "super-admin",
+    });
 
     user ??= await User.findOne({
       email: email,
-      role: { $in: ['admin', 'vendor'] }
+      role: { $in: ["admin", "vendor"] },
     });
 
     if (!user) {
-      return res.status(400).json({ msg: "No account found with this email. Please sign up." });
+      return res
+        .status(400)
+        .json({ msg: "No account found with this email. Please sign up." });
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -183,22 +200,24 @@ export const updateUserRole = async (req, res) => {
   try {
     const { userId } = req.params; // User ID from URL params
     const { role } = req.body; // New role from request body
-    const validRoles = ['user', 'admin', 'vendor'];
+    const validRoles = ["user", "admin", "vendor"];
     if (!validRoles.includes(role)) {
-      return res.status(400).json({ msg: 'Invalid role provided.' });
+      return res.status(400).json({ msg: "Invalid role provided." });
     }
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ msg: 'User not found.' });
+      return res.status(404).json({ msg: "User not found." });
     }
     user.role = role;
     await user.save();
     res.status(200).json({
-      msg: 'User role updated successfully.',
+      msg: "User role updated successfully.",
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ msg: 'Failed to update user role.', error: error.message });
+    res
+      .status(500)
+      .json({ msg: "Failed to update user role.", error: error.message });
   }
 };
 
@@ -244,7 +263,9 @@ export const editProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in editProfile:", error);
-    res.status(500).json({ msg: "Failed to update profile.", error: error.message });
+    res
+      .status(500)
+      .json({ msg: "Failed to update profile.", error: error.message });
   }
 };
 
@@ -261,7 +282,9 @@ export const getUserDetails = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ msg: "Failed to fetch user details.", error: error.message });
+    res
+      .status(500)
+      .json({ msg: "Failed to fetch user details.", error: error.message });
   }
 };
 
@@ -293,11 +316,13 @@ export const getAllUsers = async (req, res) => {
     const filter = {};
     if (referenceWebsite) {
       filter.referenceWebsite = {
-        $in: referenceWebsite.split(",").map((id) => new mongoose.Types.ObjectId(id)),
+        $in: referenceWebsite
+          .split(",")
+          .map((id) => new mongoose.Types.ObjectId(id)),
       };
     }
-    if(role){
-      filter.role = role
+    if (role) {
+      filter.role = role;
     }
     if (search) {
       const regex = new RegExp(search, "i"); // Case-insensitive search
@@ -326,8 +351,79 @@ export const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error fetching users: ${error.message}`);
-    res.status(500).json({ msg: "Failed to fetch users", error: error.message });
+    res
+      .status(500)
+      .json({ msg: "Failed to fetch users", error: error.message });
   }
 };
 
+export const requestPasswordReset = async (req, res) => {
+  try {
+    const { email, referenceWebsite } = req.body;
 
+    if (!email || !referenceWebsite) {
+      return res
+        .status(400)
+        .json({ msg: "Email and referenceWebsite are required." });
+    }
+
+    const user = await User.findOne({ email, referenceWebsite });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    const resetToken = jwt.sign(
+      { id: user._id },
+      process.env.RESET_PASSWORD_SECRET || "resetSecret",
+      { expiresIn: "15m" }
+    );
+
+    // Send token back (in real apps, you email this)
+    return res.status(200).json({
+      msg: "Password reset token generated successfully.",
+      resetToken,
+    });
+  } catch (error) {
+    console.error("Error in requestPasswordReset:", error);
+    return res
+      .status(500)
+      .json({ msg: "Failed to generate reset token.", error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body;
+
+    if (!resetToken || !newPassword) {
+      return res
+        .status(400)
+        .json({ msg: "Token and new password are required." });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(
+        resetToken,
+        process.env.RESET_PASSWORD_SECRET || "resetSecret"
+      );
+    } catch (err) {
+      return res.status(400).json({ msg: "Invalid or expired reset token." });
+    }
+
+    const user = await User.findById(payload.id);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ msg: "Password reset successful." });
+  } catch (error) {
+    console.error("resetPassword Error:", error);
+    res.status(500).json({ msg: "Failed to reset password." });
+  }
+};

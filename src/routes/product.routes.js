@@ -7,8 +7,8 @@ import upload from "../middleware/multerConfig.js";
 const productRoutes = express.Router();
 
 productRoutes.post(
-  "/createproduct",
-  isAdmin,
+  "/products",
+  isAdmin, 
   upload.array("images", 5), // up to 5 images
   createProduct
 );
