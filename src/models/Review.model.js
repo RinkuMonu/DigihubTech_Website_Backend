@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
+    referenceWebsite: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Websitelist",
+    },
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",

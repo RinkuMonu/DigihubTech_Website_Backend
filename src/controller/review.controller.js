@@ -3,6 +3,7 @@ import Order from "../models/Order.model.js";
 
 export const createReview = async (req, res) => {
   const { rating, comment } = req.body;
+  const { referenceWebsite } = req.query;
   const productId = req.params.productId;
 
   try {
@@ -10,7 +11,7 @@ export const createReview = async (req, res) => {
     const hasPurchased = await Order.findOne({
       customer: req.user.id,
       "products.product": productId,
-      paymentStatus: "completed", 
+      paymentStatus: "completed",
     });
 
     if (!hasPurchased) {
@@ -34,11 +35,11 @@ export const createReview = async (req, res) => {
 
     // ✅ Create review
     const review = await ReviewModel.create({
-
       product: productId,
       user: req.user.id,
       rating,
       comment,
+      referenceWebsite,
     });
 
     res.status(201).json({ success: true, review, message: "Review done" });
