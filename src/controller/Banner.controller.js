@@ -5,24 +5,33 @@ import Websitelist from "../models/Website.model.js";
 // Create a single banner
 export const createBanner = async (req, res) => {
   try {
-      const { referenceWebsite, bannerName,deviceType= "both", description, position } = req.body;
-   const imageArray = req.files?.map(file => `/uploads/${file.filename}`) || [];
+    const {
+      referenceWebsite,
+      bannerName,
+      deviceType = "both",
+      description,
+      position,
+    } = req.body;
+    const imageArray =
+      req.files?.map((file) => `/uploads/${file.filename}`) || [];
 
-     const banner = new Banner({
+    const banner = new Banner({
       referenceWebsite,
       bannerName,
       description,
       images: imageArray,
       position: position || "homepage-top",
       addedBy: req.user?.id?.toString(),
-        deviceType
+      deviceType,
     });
 
     await banner.save();
 
     res.status(200).json({ message: "Banner added successfully", banner });
   } catch (error) {
-    res.status(500).json({ message: "Failed to add banner", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to add banner", error: error.message });
   }
 };
 
@@ -78,7 +87,9 @@ export const createMultipleBanners = async (req, res) => {
       banners: result,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to add banners", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to add banners", error: error.message });
   }
 };
 
@@ -125,7 +136,9 @@ export const getBanners = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve banners", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve banners", error: error.message });
   }
 };
 
@@ -138,7 +151,9 @@ export const getBannerDetail = async (req, res) => {
     }
     res.status(200).json({ message: "Banner retrieved successfully", banner });
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve banner", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve banner", error: error.message });
   }
 };
 
@@ -163,9 +178,13 @@ export const updateBanner = async (req, res) => {
       return res.status(404).json({ message: "Banner not found" });
     }
 
-    res.status(200).json({ message: "Banner updated successfully", updatedBanner });
+    res
+      .status(200)
+      .json({ message: "Banner updated successfully", updatedBanner });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update banner", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update banner", error: error.message });
   }
 };
 
@@ -178,7 +197,9 @@ export const deleteBanner = async (req, res) => {
     }
     res.status(200).json({ message: "Banner deleted successfully", banner });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete banner", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete banner", error: error.message });
   }
 };
 export const getMobileBanners = async (req, res) => {
@@ -192,6 +213,35 @@ export const getMobileBanners = async (req, res) => {
     const query = {
       referenceWebsite,
       deviceType: { $in: ["mobile", "both"] },
+    };
+
+    if (position) query.position = position;
+
+    const banners = await Banner.find(query).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Mobile banners fetched successfully",
+      banners,
+    });
+  } catch (error) {
+    console.error("Error fetching mobile banners:", error);
+    return res.status(500).json({
+      message: "Failed to fetch mobile banners",
+      error: error.message,
+    });
+  }
+};
+export const getDestopBanners = async (req, res) => {
+  try {
+    const { referenceWebsite, position } = req.query;
+
+    if (!referenceWebsite) {
+      return res.status(400).json({ message: "Missing referenceWebsite" });
+    }
+
+    const query = {
+      referenceWebsite,
+      deviceType: { $in: ["desktop", "both"] },
     };
 
     if (position) query.position = position;

@@ -16,7 +16,8 @@ const bannerSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-    },deviceType: {
+    },
+    deviceType: {
       type: String,
       enum: ["mobile", "desktop", "both"],
       default: "both",
@@ -25,19 +26,17 @@ const bannerSchema = new mongoose.Schema(
       type: [String],
       required: true,
     },
-   
-     position: {
+
+    position: {
       type: String,
       enum: ["homepage-top", "homepage-bottom", "sidebar", "footer", "custom"],
       default: "homepage-top",
     },
-  
-  
+
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-   
-    }
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt timestamps

@@ -1,19 +1,19 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const policySchema = new mongoose.Schema(
-    {
-        referenceWebsite: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Websitelist",
-        },
-        privacyPolicy: { type: String },
-        termsAndConditions: { type: String },
-        refundPolicy: { type: String },
-        shippingPolicy: { type: String }
+  {
+    referenceWebsite: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Websitelist",
     },
-    { timestamps: true }
+    privacyPolicy: { type: String },
+    termsAndConditions: { type: String },
+    refundPolicy: { type: String },
+    shippingPolicy: { type: String },
+  },
+  { timestamps: true }
 );
 
-const policy = mongoose.model('Policy', policySchema);
+const policy = mongoose.model("Policy", policySchema);
 
 export default policy;
