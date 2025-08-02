@@ -9,9 +9,9 @@ import authRoutes from "./src/routes/auth.routes.js";
 import productRoutes from "./src/routes/product.routes.js";
 import websiteRoutes from "./src/routes/website.routes.js";
 import cartRoutes from "./src/routes/cart.routes.js";
-import wishlistRoutes from './src/routes/wishlist.routes.js';
-import catergoriesRoutes from "./src/routes/category.routes.js"
-import policyRoutes from "./src/routes/policy.routes.js"
+import wishlistRoutes from "./src/routes/wishlist.routes.js";
+import catergoriesRoutes from "./src/routes/category.routes.js";
+import policyRoutes from "./src/routes/policy.routes.js";
 
 import { phonePeController } from "./src/routes/payment.routes.js";
 import { getDashboardData } from "./src/routes/dashboard.routes.js";
@@ -19,6 +19,7 @@ import { fileURLToPath } from "url";
 import vendorRoutes from "./src/routes/vendor.routes.js";
 import { isAdmin } from "./src/middleware/isAdmin.js";
 import bannerRoutes from "./src/routes/banner.rotes.js";
+import review from "./src/routes/review.route.js";
 
 dotenv.config();
 
@@ -31,37 +32,44 @@ const PORT = process.env.PORT || 8080;
 // app.use(cors());
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5174",
+      "https://yourfrontenddomain.com",
+      "https://jajamblockprints.com",
+      "https://admin.jajamblockprints.com",
+    ], // allow specific frontend domains
+    credentials: true, // allow cookies and headers like Authorization
+  })
+);
 
-app.use(cors({
-  origin: ["http://localhost:5174", "https://yourfrontenddomain.com" , "https://jajamblockprints.com" , "https://admin.jajamblockprints.com"], // allow specific frontend domains
-  credentials: true, // allow cookies and headers like Authorization
-}));
-
-app.use('/uploads', express.static(path.join(__dirname, './src/uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "./src/uploads")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/website", websiteRoutes);
 app.use("/api/cart", cartRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/categories', catergoriesRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/categories", catergoriesRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/order", orderRoutes);
-app.use("/api/policy",policyRoutes)
+app.use("/api/policy", policyRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/sendreview", review);
 
-app.post("/api/phonepe-payment", phonePeController)
-app.get("/api/dashboard", isAdmin, getDashboardData)
-app.use("/api", vendorRoutes)
+app.post("/api/phonepe-payment", phonePeController);
+app.get("/api/dashboard", isAdmin, getDashboardData);
+app.use("/api", vendorRoutes);
 
-// 67888fb90e1c6b678401302d 
+// 67888fb90e1c6b678401302d
 
 DBConnection();
 
-app.get('/', (req, res) => {
-  res.send('server running well')
-})
+app.get("/", (req, res) => {
+  res.send("server running well");
+});
 
 app.use((err, req, res, next) => {
   console.error("Error occurred: ", err);

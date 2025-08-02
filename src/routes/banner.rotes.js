@@ -6,6 +6,7 @@ import {
   getBannerDetail,
   getBanners,
   getBannersByWebsiteAndPosition,
+  getDestopBanners,
   getMobileBanners,
   updateBanner,
 } from "../controller/Banner.controller.js";
@@ -32,6 +33,7 @@ bannerRoutes.post(
 bannerRoutes.get("/by-website-and-position", getBannersByWebsiteAndPosition);
 
 bannerRoutes.get("/mobile", getMobileBanners); // new
+bannerRoutes.get("/desktop", getDestopBanners); // new
 // Get banners (public or protected depending on app logic)
 bannerRoutes.get("/", getBanners);
 
