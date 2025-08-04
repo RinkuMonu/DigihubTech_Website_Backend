@@ -27,7 +27,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5008;
 
 // app.use(cors());
 app.use(cookieParser());
@@ -36,13 +36,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5174",
-      "https://yourfrontenddomain.com",
-      "https://jajamblockprints.com",
-      "https://admin.jajamblockprints.com",
-    ], // allow specific frontend domains
-    credentials: true, // allow cookies and headers like Authorization
+    origin: "*", // allow all domains
+    credentials: true, // ⚠️ Warning: credentials:true doesn't work with "*"
   })
 );
 
@@ -73,7 +68,7 @@ app.get("/", (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error("Error occurred: ", err);
-  const statusCode = err.statusCode || 5007;
+  const statusCode = err.statusCode || 5008;
   const message = err.message || "Internal Server Error";
   res.status(statusCode).json({ message }); // Respond with the error message
 });
