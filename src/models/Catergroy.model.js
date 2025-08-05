@@ -28,5 +28,5 @@ const ProductCategory = mongoose.model(
   "ProductCategory",
   productCategorySchema
 );
-
+ 
 export default ProductCategory;
