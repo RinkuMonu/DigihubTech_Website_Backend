@@ -188,7 +188,7 @@ export const updateBanner = async (req, res) => {
     );
 
     if (!updatedBanner) {
-      return res.status(404).json({ message: "Banner not found" });
+      return res.status(404).json({ message: "Banner not found" }); 
     }
 
     res
