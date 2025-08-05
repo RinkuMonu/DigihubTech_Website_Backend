@@ -415,15 +415,27 @@ export const setDealOfTheDay = async (req, res) => {
   try {
     const { productId, status, durationInHours } = req.body;
 
-    const now = new Date();
-    const endTime = new Date(now.getTime() + durationInHours * 60 * 60 * 1000);
+    const nowUTC = new Date();
+
+    // Convert to IST (UTC + 5:30)
+    const ISTOffset = 5.5 * 60 * 60 * 1000;
+    const nowIST = new Date(nowUTC.getTime() + ISTOffset);
+
+    let endTime = null;
+    if (status && durationInHours) {
+      const duration = parseFloat(durationInHours);
+      if (isNaN(duration)) {
+        return res.status(400).json({ message: "Invalid durationInHours" });
+      }
+      endTime = new Date(nowIST.getTime() + duration * 60 * 60 * 1000);
+    }
 
     const product = await Product.findByIdAndUpdate(
       productId,
       {
         dealOfTheDay: {
-          status,
-          startTime: status ? now : null,
+          status: status,
+          startTime: status ? nowIST : null,
           endTime: status ? endTime : null,
         },
       },
@@ -442,6 +454,7 @@ export const setDealOfTheDay = async (req, res) => {
     res.status(500).json({ message: "Failed to update Deal of the Day", error: error.message });
   }
 };
+
 
 export const getDealsOfTheDay = async (req, res) => {
   try {
