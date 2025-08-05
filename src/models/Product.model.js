@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: [0, "Price must be a positive value"],
     },
+    dealOfTheDay: {
+      status: { type: Boolean, default: false },
+      startTime: { type: Date },         // When the deal starts
+      endTime: { type: Date },           // When the deal ends
+    },
     actualPrice: {
       type: Number,
       min: [0, "Price must be a positive value"],
@@ -33,7 +38,7 @@ const productSchema = new mongoose.Schema(
     },
     size: {
       type: String, // Single size, not an array
-    //  enum: ["S", "M", "L", "XL", "XXL", "Free", "Custom", "OneSize"],
+      //  enum: ["S", "M", "L", "XL", "XXL", "Free", "Custom", "OneSize"],
       default: "Free", // Default size
       required: true,
     },
@@ -45,7 +50,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "ProductCategory"
     },
-    
+
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -1,5 +1,5 @@
 import express from "express";
-import { createMultipleProducts, createProduct, deleteProduct, getProductDetail, getProducts, updateProduct } from "../controller/Product.controller.js";
+import { createMultipleProducts, createProduct, deleteProduct, getProductDetail, getProducts, updateProduct, setDealOfTheDay, getDealsOfTheDay } from "../controller/Product.controller.js";
 import { isAdmin } from "../middleware/isAdmin.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import upload from "../middleware/multerConfig.js";
@@ -19,5 +19,7 @@ productRoutes.get("/getproduct/:id", getProductDetail);
 productRoutes.delete("/delete/:id", isAdmin, deleteProduct);
 productRoutes.put("/products/:id", isAdmin, updateProduct);
 productRoutes.post("/addmany",createMultipleProducts);
+productRoutes.post("/dealoftheday",setDealOfTheDay);
+productRoutes.get("/getdeals",getDealsOfTheDay);
 
 export default productRoutes;

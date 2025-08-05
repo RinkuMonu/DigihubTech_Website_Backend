@@ -43,6 +43,7 @@ cors({
       "https://yourfrontenddomain.com",
       "https://jajamblockprints.com",
       "https://admin.jajamblockprints.com",
+      "https://slsxt366-4002.inc1.devtunnels.ms/",
     ], // allow specific frontend domains
     credentials: true, // allow cookies and headers like Authorization
   })
