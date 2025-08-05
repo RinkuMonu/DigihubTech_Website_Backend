@@ -1,59 +1,50 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadsDir = path.join(__dirname, '../uploads');
-
-// Check if uploads directory exists, if not, create it
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Storage configuration for Multer
-const storage = multer.diskStorage({ 
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir); // Save uploaded files to 'uploads' directory
-    },
-    filename: (req, file, cb) => {
-        // Ensure unique filename by prepending current timestamp to the original filename
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+// ✅ Configure Cloudinary with your credentials
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // e.g., 'mycloud'
+    api_key: process.env.CLOUDINARY_API_KEY,        // e.g., '1234567890'
+    api_secret: process.env.CLOUDINARY_API_SECRET,  // e.g., 'abcdefg12345'
 });
 
-// File filter to allow only images
+// ✅ Set up Cloudinary storage
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'uploads', // Folder name in Cloudinary
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'], // Allowed image types
+        transformation: [{ width: 800, height: 800, crop: 'limit' }] // Optional image resize
+    },
+});
+
+// ✅ File filter to allow only image files
 const fileFilter = (req, file, cb) => {
-    // Check file type (only images allowed)
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
-        // If the file is not an image, return an error message
         cb(new Error('Only image files are allowed!'), false);
     }
 };
 
-// Multer configuration with file size limit (optional, 10MB here)
+// ✅ Create the multer upload middleware
 const upload = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB size limit (adjust as needed)
+        fileSize: 10 * 1024 * 1024, // 10MB max
     }
 });
 
-// Middleware to handle Multer errors
+// ✅ Optional: Multer error handler middleware
 const multerErrorHandler = (err, req, res, next) => {
     if (err instanceof multer.MulterError) {
-        // Multer-specific errors (like file size limit or field name mismatch)
         return res.status(400).json({ message: err.message });
     } else if (err) {
-        // Other errors (like file filter rejection)
-        return res.status(400).json({ message: 'An error occurred during file upload', error: err.message });
+        return res.status(400).json({ message: 'File upload error', error: err.message });
     }
-    next(); // Pass to the next middleware if no errors
+    next();
 };
 
-// export { upload, multerErrorHandler };
 export default upload;

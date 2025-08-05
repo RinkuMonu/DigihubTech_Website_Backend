@@ -71,7 +71,7 @@ app.use("/api", vendorRoutes);
 DBConnection();
 
 app.get("/", (req, res) => {
-  res.send("server running well");
+  res.send("server running well"); 
 });
 
 app.use((err, req, res, next) => {
