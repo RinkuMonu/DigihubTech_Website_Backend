@@ -35,24 +35,24 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(cors({ origin: '*' }));
+// app.use(cors({ origin: '*' }));
 
 
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:5174",
-//       "http://localhost:5008",
-//       "http://localhost:4002",
-//       "https://yourfrontenddomain.com",
-//       "https://jajamblockprints.com",
-//       "https://admin.jajamblockprints.com",
-//       "https://slsxt366-4002.inc1.devtunnels.ms/",
-//       "https://admin.digihubtech.in"
-//     ], // allow specific frontend domains
-//     credentials: true, // allow cookies and headers like Authorization
-//   })
-// );
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5174",
+      "http://localhost:5008",
+      "http://localhost:4002",
+      "https://yourfrontenddomain.com",
+      "https://jajamblockprints.com",
+      "https://admin.jajamblockprints.com",
+      "https://slsxt366-4002.inc1.devtunnels.ms/",
+      "https://admin.digihubtech.in"
+    ], // allow specific frontend domains
+    credentials: true, // allow cookies and headers like Authorization
+  })
+);
 
 
 app.use("/uploads", express.static(path.join(__dirname, "./src/uploads")));
