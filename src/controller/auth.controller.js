@@ -141,57 +141,65 @@ export const logInUser = async (req, res) => {
 };
 
 export const adminLogin = async (req, res) => {
-  console.log("hiithfhfhdf");
-
   try {
     const { email, password } = req.body;
+
+    // ✅ 1. Validate input
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ msg: "Email, password, and reference website are required." });
+      return res.status(400).json({
+        msg: "Email and password are required.",
+      });
     }
-    // const user = await User.findOne({ email,  });
 
-    let user = await User.findOne({
-      email,
-      role: "super-admin",
-    });
+  
+    const allowedRoles = ["super-admin", "admin", "vendor"];
 
-    user ??= await User.findOne({
+    const user = await User.findOne({
       email: email,
-      role: { $in: ["admin", "vendor"] },
+      role: { $in: allowedRoles },
     });
 
+    // ❌ User not found
     if (!user) {
-      return res
-        .status(400)
-        .json({ msg: "No account found with this email. Please sign up." });
+      return res.status(400).json({
+        msg: "No account found with this email and valid role.",
+      });
     }
+
+    // ✅ 3. Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ msg: "Invalid password." });
     }
+
+    // ✅ 4. Generate tokens
     const accessToken = user.createAccessToken();
     const refreshToken = user.createRefreshToken();
+
+    // ✅ 5. Set secure refresh token cookie
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Ensure this is true in production
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-    };
-    res.cookie("refreshToken", refreshToken, {
-      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    };
 
-    user.password = undefined;
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    // ✅ 6. Remove sensitive fields before sending
+    const userData = user.toObject();
+    delete userData.password;
+
+    // ✅ 7. Respond with tokens and user
     return res.status(200).json({
-      userData: user,
       msg: "You have logged in successfully",
+      userData,
       accessToken,
       refreshToken,
     });
+
   } catch (error) {
-    console.log("file: auth.controller.js:170 ~ adminLogin ~ error:", error);
+    console.error("adminLogin error:", error);
     res.status(500).json({ msg: "Login failed", error: error.message });
   }
 };
