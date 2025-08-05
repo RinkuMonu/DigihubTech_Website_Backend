@@ -458,15 +458,13 @@ export const setDealOfTheDay = async (req, res) => {
 
 export const getDealsOfTheDay = async (req, res) => {
   try {
-    // Get current IST time
-    const istTime = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-    );
+    const utcNow = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istTime = new Date(utcNow.getTime() + istOffset);
 
     console.log("🕒 Current IST Time:", istTime.toLocaleString());
     console.log("🕒 Current UTC Time:", new Date().toISOString());
 
-    // Find active deals
     const deals = await Product.find({
       "dealOfTheDay.status": true,
       "dealOfTheDay.startTime": { $lte: istTime },
