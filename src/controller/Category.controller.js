@@ -5,7 +5,14 @@ import Websitelist from '../models/Website.model.js';
 export const createCategory = async (req, res) => {
     try {
         const { name, description, referenceWebsite } = req.body;
-           const imageArray = req.files?.map(file => `/uploads/${file.filename}`) || [];
+        let imageArray = [];
+
+        if (req.file) {
+            imageArray = [req.file.path];
+        } else if (req.files) {
+            imageArray = req.files.map(file => file.path);
+        }
+
 
         if (!name) {
             return res.status(400).json({ message: 'Category name is required.' });
@@ -18,7 +25,7 @@ export const createCategory = async (req, res) => {
         }
 
         if (!category) {
-            category = new ProductCategory({ name, description ,image: imageArray[0]});
+            category = new ProductCategory({ name, description, image: imageArray[0] });
             await category.save();
         }
 
