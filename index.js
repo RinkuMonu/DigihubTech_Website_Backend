@@ -35,7 +35,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(
-cors({
+  cors({
     origin: [
       "http://localhost:5174",
       "http://localhost:5008",
@@ -44,6 +44,7 @@ cors({
       "https://jajamblockprints.com",
       "https://admin.jajamblockprints.com",
       "https://slsxt366-4002.inc1.devtunnels.ms/",
+      "https://admin.digihubtech.in"
     ], // allow specific frontend domains
     credentials: true, // allow cookies and headers like Authorization
   })
@@ -72,7 +73,7 @@ app.use("/api", vendorRoutes);
 DBConnection();
 
 app.get("/", (req, res) => {
-  res.send("server running well"); 
+  res.send("server running well");
 });
 
 app.use((err, req, res, next) => {
