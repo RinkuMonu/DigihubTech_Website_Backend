@@ -12,8 +12,15 @@ export const createBanner = async (req, res) => {
       description,
       position,
     } = req.body;
-    const imageArray =
-      req.files?.map((file) => `/uploads/${file.filename}`) || [];
+
+    let imageArray = [];
+
+    if (req.file) {
+      imageArray = [req.file.path];
+    } else if (req.files) {
+      imageArray = req.files.map(file => file.path);
+    }
+
 
     const banner = new Banner({
       referenceWebsite,
@@ -160,8 +167,14 @@ export const getBannerDetail = async (req, res) => {
 // Update a banner
 export const updateBanner = async (req, res) => {
   try {
-    const { bannerName, description, images, position } = req.body;
-    const imageArray = Array.isArray(images) ? images : [images];
+    const { bannerName, description, position } = req.body;
+    let imageArray = [];
+
+    if (req.file) {
+      imageArray = [req.file.path];
+    } else if (req.files) {
+      imageArray = req.files.map(file => file.path);
+    }
 
     const updatedBanner = await Banner.findByIdAndUpdate(
       req.params.id,
@@ -175,7 +188,7 @@ export const updateBanner = async (req, res) => {
     );
 
     if (!updatedBanner) {
-      return res.status(404).json({ message: "Banner not found" });
+      return res.status(404).json({ message: "Banner not found" }); 
     }
 
     res
