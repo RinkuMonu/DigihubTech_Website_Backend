@@ -20,6 +20,7 @@ import vendorRoutes from "./src/routes/vendor.routes.js";
 import { isAdmin } from "./src/middleware/isAdmin.js";
 import bannerRoutes from "./src/routes/banner.rotes.js";
 import review from "./src/routes/review.route.js";
+import "./cron.js";
 
 dotenv.config();
 

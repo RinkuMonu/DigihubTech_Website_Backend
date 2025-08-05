@@ -458,16 +458,30 @@ export const setDealOfTheDay = async (req, res) => {
 
 export const getDealsOfTheDay = async (req, res) => {
   try {
-    const now = new Date();
+    // Get current IST time
+    const istTime = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    );
 
+    console.log("🕒 Current IST Time:", istTime.toLocaleString());
+    console.log("🕒 Current UTC Time:", new Date().toISOString());
+
+    // Find active deals
     const deals = await Product.find({
       "dealOfTheDay.status": true,
-      "dealOfTheDay.startTime": { $lte: now },
-      "dealOfTheDay.endTime": { $gte: now },
+      "dealOfTheDay.startTime": { $lte: istTime },
+      "dealOfTheDay.endTime": { $gte: istTime },
     });
 
-    res.status(200).json({ message: "Active deals fetched", deals });
+    res.status(200).json({
+      message: "✅ Active deals fetched successfully",
+      deals,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch deals", error: error.message });
+    console.error("❌ Error in getDealsOfTheDay:", error.message);
+    res.status(500).json({
+      message: "❌ Failed to fetch deals",
+      error: error.message,
+    });
   }
 };
