@@ -9,10 +9,6 @@ cloudinary.config({
     api_secret: "kavO7bGj_c8gXrZQ7JAGGVXR6Tc",
 });
 
-// 🔍 Debug logs (sirf test ke liye; production me hata dena)
-console.log("Cloudinary Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
-console.log("Cloudinary API Key:", process.env.CLOUDINARY_API_KEY);
-console.log("Cloudinary API Secret:", process.env.CLOUDINARY_API_SECRET ? "LOADED" : "MISSING");
 
 // ✅ Set up Cloudinary storage
 const storage = new CloudinaryStorage({
