@@ -13,7 +13,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Storage configuration for Multer
-const storage = multer.diskStorage({   
+const storage = multer.diskStorage({ 
     destination: (req, file, cb) => {
         cb(null, uploadsDir); // Save uploaded files to 'uploads' directory
     },
