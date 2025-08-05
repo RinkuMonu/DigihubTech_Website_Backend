@@ -485,3 +485,4 @@ export const getDealsOfTheDay = async (req, res) => {
     });
   }
 };
+     
