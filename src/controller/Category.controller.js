@@ -39,6 +39,7 @@ export const createCategory = async (req, res) => {
       category,
     });
   } catch (error) {
+    console.error("Error creating category:", error);
     res.status(500).json({
       message: "Failed to create category.",
       error: error.message,
