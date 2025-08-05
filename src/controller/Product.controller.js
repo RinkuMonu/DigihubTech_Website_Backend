@@ -399,4 +399,50 @@ export const deleteProduct = async (req, res) => {
     }
 };
 
+export const setDealOfTheDay = async (req, res) => {
+  try {
+    const { productId, status, durationInHours } = req.body;
 
+    const now = new Date();
+    const endTime = new Date(now.getTime() + durationInHours * 60 * 60 * 1000);
+
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      {
+        dealOfTheDay: {
+          status,
+          startTime: status ? now : null,
+          endTime: status ? endTime : null,
+        },
+      },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({
+      message: `Deal of the Day ${status ? "activated" : "removed"}`,
+      product,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update Deal of the Day", error: error.message });
+  }
+};
+
+export const getDealsOfTheDay = async (req, res) => {
+  try {
+    const now = new Date();
+
+    const deals = await Product.find({
+      "dealOfTheDay.status": true,
+      "dealOfTheDay.startTime": { $lte: now },
+      "dealOfTheDay.endTime": { $gte: now },
+    });
+
+    res.status(200).json({ message: "Active deals fetched", deals });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch deals", error: error.message });
+  }
+};
