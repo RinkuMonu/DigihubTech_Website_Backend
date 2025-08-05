@@ -2,20 +2,20 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
-// ✅ Configure Cloudinary with your credentials
+// ✅ Static Cloudinary Config (abhi ke liye hard-coded)
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // e.g., 'mycloud'
-    api_key: process.env.CLOUDINARY_API_KEY,        // e.g., '1234567890'
-    api_secret: process.env.CLOUDINARY_API_SECRET,  // e.g., 'abcdefg12345'
+    cloud_name: "dgcnzpurv",
+    api_key: "723517284524997",
+    api_secret: "kavO7bGj_c8gXrZQ7JAGGVXR6Tc",
 });
+
 
 // ✅ Set up Cloudinary storage
 const storage = new CloudinaryStorage({
     cloudinary,
     params: {
         folder: 'uploads', // Folder name in Cloudinary
-        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'], // Allowed image types
-        // transformation: [{ width: 800, height: 800, crop: 'limit' }] // Optional image resize
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'], 
     },
 });
 
