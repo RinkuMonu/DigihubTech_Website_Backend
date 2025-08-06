@@ -8,7 +8,7 @@ const productRoutes = express.Router();
 
 productRoutes.post(
   "/products",
-  isAdmin, 
+  isAdmin,
   upload.array("images", 5), // up to 5 images
   createProduct
 );
@@ -17,9 +17,9 @@ productRoutes.get("/getproducts", getProducts);
 productRoutes.get("/getproduct/:id", getProductDetail);
 
 productRoutes.delete("/delete/:id", isAdmin, deleteProduct);
-productRoutes.put("/products/:id", isAdmin, updateProduct);
-productRoutes.post("/addmany",createMultipleProducts);
-productRoutes.post("/dealoftheday",setDealOfTheDay);
-productRoutes.get("/getdeals",getDealsOfTheDay);
+productRoutes.put("/products/:id", isAdmin, upload.array("images", 5), updateProduct);
+productRoutes.post("/addmany", createMultipleProducts);
+productRoutes.post("/dealoftheday", setDealOfTheDay);
+productRoutes.get("/getdeals", getDealsOfTheDay);
 
 export default productRoutes;
