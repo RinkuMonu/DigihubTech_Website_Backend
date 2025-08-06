@@ -109,6 +109,7 @@ export const getProducts = async (req, res) => {
       newArrival, // ✅ added
     } = req.query;
 
+
     if (!referenceWebsite) {
       return res.status(400).json({ message: "Missing referenceWebsite" });
     }
@@ -138,11 +139,7 @@ export const getProducts = async (req, res) => {
     // Match by category name (case-insensitive)
     if (category) {
       pipeline.push({
-        $match: {
-          "category.name": {
-            $regex: new RegExp("^" + category + "$", "i"), // case-insensitive exact match
-          },
-        },
+        $match: { 'category._id': new mongoose.Types.ObjectId(category) },
       });
     }
 
@@ -180,6 +177,7 @@ export const getProducts = async (req, res) => {
 
     // Execute aggregation for products
     const products = await Product.aggregate(pipeline);
+    console.log(products);
 
     // Count total documents (excluding pagination stages)
     const countPipeline = pipeline.filter(
@@ -359,13 +357,13 @@ export const getProductDetail = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { productName, price, actualPrice, discount, category, description, size } = req.body;
-      let imageArray = [];
+    let imageArray = [];
 
-        if (req.file) {
-            imageArray = [req.file.path];
-        } else if (req.files) {
-            imageArray = req.files.map(file => file.path);
-        }
+    if (req.file) {
+      imageArray = [req.file.path];
+    } else if (req.files) {
+      imageArray = req.files.map(file => file.path);
+    }
     const productSize = size || "M";
     if (actualPrice < 0 || actualPrice > price) {
       return res.status(400).json({
@@ -483,4 +481,3 @@ export const getDealsOfTheDay = async (req, res) => {
     });
   }
 };
-     

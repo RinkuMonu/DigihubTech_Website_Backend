@@ -48,7 +48,8 @@ app.use(
       "https://jajamblockprints.com",
       "https://admin.jajamblockprints.com",
       "https://slsxt366-4002.inc1.devtunnels.ms/",
-      "https://admin.digihubtech.in"
+      "https://admin.digihubtech.in",
+      "https://website.digihubtech.in"
     ], // allow specific frontend domains
     credentials: true, // allow cookies and headers like Authorization
   })
