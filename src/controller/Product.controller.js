@@ -100,6 +100,7 @@ export const getProducts = async (req, res) => {
     const {
       referenceWebsite,
       category,
+      search,
       minPrice = 0,
       maxPrice = 1000000,
       sortBy = "createdAt",
@@ -108,7 +109,6 @@ export const getProducts = async (req, res) => {
       limit = 100,
       newArrival, // ✅ added
     } = req.query;
-
 
     if (!referenceWebsite) {
       return res.status(400).json({ message: "Missing referenceWebsite" });
@@ -138,8 +138,28 @@ export const getProducts = async (req, res) => {
 
     // Match by category name (case-insensitive)
     if (category) {
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        pipeline.push({
+          $match: {
+            "category._id": new mongoose.Types.ObjectId(category),
+          },
+        });
+      } else {
+        pipeline.push({
+          $match: {
+            "category.name": {
+              $regex: new RegExp("^" + category + "$", "i"),
+            },
+          },
+        });
+      }
+    }
+
+    if (search) {
       pipeline.push({
-        $match: { 'category._id': new mongoose.Types.ObjectId(category) },
+        $match: {
+          "productName": new RegExp(search, "i"),
+        },
       });
     }
 
@@ -177,7 +197,6 @@ export const getProducts = async (req, res) => {
 
     // Execute aggregation for products
     const products = await Product.aggregate(pipeline);
-    console.log(products);
 
     // Count total documents (excluding pagination stages)
     const countPipeline = pipeline.filter(
