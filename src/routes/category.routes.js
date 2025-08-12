@@ -11,10 +11,10 @@ import upload from '../middleware/multerConfig.js';
 
 const router = express.Router();
 
-router.post('/',upload.array('images', 5), isAdmin, createCategory);
+router.post('/', upload.array('images', 5), isAdmin, createCategory);
 router.get('/', getCategories);
 router.get('/:id', isAdmin, getCategoryById);
-router.put('/:id', isAdmin, updateCategory);
+router.put('/:id', upload.array('images', 5), isAdmin, updateCategory);
 // Route to delete a category by ID
 router.delete('/:id', isAdmin, deleteCategory);
 
