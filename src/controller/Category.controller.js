@@ -85,9 +85,16 @@ export const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, subcategory } = req.body;
+    let imageArray = [];
+
+    if (req.file) {
+      imageArray = [req.file.path];
+    } else if (req.files) {
+      imageArray = req.files.map(file => file.path);
+    }
     const category = await ProductCategory.findByIdAndUpdate(
       id,
-      { name, description, subcategory },
+      { name, description, subcategory, image: imageArray[0], },
       { new: true, runValidators: true }
     );
     if (!category) {

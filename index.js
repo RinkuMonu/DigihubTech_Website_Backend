@@ -21,6 +21,7 @@ import { isAdmin } from "./src/middleware/isAdmin.js";
 import bannerRoutes from "./src/routes/banner.rotes.js";
 import review from "./src/routes/review.route.js";
 import "./cron.js";
+import paymentRoutes from "./src/routes/paymentRoute.js";
 
 dotenv.config();
 
@@ -73,6 +74,8 @@ app.use("/api/sendreview", review);
 app.post("/api/phonepe-payment", phonePeController);
 app.get("/api/dashboard", isAdmin, getDashboardData);
 app.use("/api", vendorRoutes);
+
+app.use("/api/payment", paymentRoutes);
 
 // 67888fb90e1c6b678401302d
 
