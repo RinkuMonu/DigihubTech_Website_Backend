@@ -1,5 +1,5 @@
 import express from "express";
-import { createMultipleProducts, createProduct, deleteProduct, getProductDetail, getProducts, updateProduct, setDealOfTheDay, getDealsOfTheDay } from "../controller/Product.controller.js";
+import { createMultipleProducts, createProduct, deleteProduct, getProductDetail, getProducts, updateProduct, setDealOfTheDay, getDealsOfTheDay, getProductsBySubcategory } from "../controller/Product.controller.js";
 import { isAdmin } from "../middleware/isAdmin.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import upload from "../middleware/multerConfig.js";
@@ -15,6 +15,7 @@ productRoutes.post(
 
 productRoutes.get("/getproducts", getProducts);
 productRoutes.get("/getproduct/:id", getProductDetail);
+productRoutes.post("/getproduct/subcategory", getProductsBySubcategory);
 
 productRoutes.delete("/delete/:id", isAdmin, deleteProduct);
 productRoutes.put("/products/:id", isAdmin, upload.array("images", 5), updateProduct);

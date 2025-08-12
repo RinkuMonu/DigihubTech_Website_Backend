@@ -1,6 +1,7 @@
 import Product from "../models/Product.model.js";
 import mongoose from "mongoose";
 import Websitelist from "../models/Website.model.js"; // Import the Websitelist model
+import ProductCategory from "../models/Catergroy.model.js";
 export const createProduct = async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
@@ -497,6 +498,54 @@ export const getDealsOfTheDay = async (req, res) => {
     res.status(500).json({
       message: "❌ Failed to fetch deals",
       error: error.message,
+    });
+  }
+};
+export const getProductsBySubcategory = async (req, res) => {
+  try {
+    const { subcategory, referenceWebsite } = req.body;
+
+    if (!subcategory) {
+      return res.status(400).json({ message: "Missing subcategory parameter" });
+    }
+    if (!referenceWebsite) {
+      return res.status(400).json({ message: "Missing referenceWebsite parameter" });
+    }
+
+    // 1️⃣ Find categories that have this subcategory name
+    const categories = await ProductCategory.find({
+      subcategory: { $regex: `^${subcategory}$`, $options: "i" }
+    });
+
+    if (!categories.length) {
+      return res.status(200).json({
+        message: "No categories found for this subcategory",
+        categories: [],
+        products: []
+      });
+    }
+
+    // 2️⃣ Extract category IDs
+    const categoryIds = categories.map(cat => cat._id);
+
+    // 3️⃣ Find products that belong to these categories and the given website
+    const products = await Product.find({
+      category: { $in: categoryIds },
+      referenceWebsite: new mongoose.Types.ObjectId(referenceWebsite)
+    }).populate("category");
+
+    // 4️⃣ Response
+    return res.status(200).json({
+      message: "Products retrieved successfully",
+      categories,
+      products
+    });
+
+  } catch (error) {
+    console.error("Error in getProductsBySubcategory:", error);
+    return res.status(500).json({
+      message: "Failed to retrieve products by subcategory",
+      error: error.message
     });
   }
 };
