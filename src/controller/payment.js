@@ -80,7 +80,7 @@ export const callbackPayout = async (req, res) => {
 
         console.log("Received callback query data:", data);
 
-        const worldpayURL = 'https://api.finuniques.com/api/digihubredirectcallback';
+        const worldpayURL = 'https://api.finuniques.in/api/digihubredirectcallback';
 
         const worldpayResponse = await axios.get(worldpayURL, {
             params: data,
